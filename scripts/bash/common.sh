@@ -64,18 +64,34 @@ ensure_dir() {
     mkdir -p "$dir"
 }
 
+# 获取 Python 解释器路径（优先使用虚拟环境）
+get_python_interpreter() {
+    CLIPMATE_ROOT=$(get_clipmate_root)
+    VENV_PYTHON="$CLIPMATE_ROOT/venv/bin/python3"
+    
+    # 如果虚拟环境存在且包含 Python，使用虚拟环境
+    if [ -f "$VENV_PYTHON" ]; then
+        echo "$VENV_PYTHON"
+    else
+        # 否则使用系统 Python
+        echo "python3"
+    fi
+}
+
 # 调用 Python 脚本
 run_python_script() {
     script_name="$1"
     shift
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    python3 "$SCRIPT_DIR/../python/$script_name" "$@"
+    PYTHON_CMD=$(get_python_interpreter)
+    $PYTHON_CMD "$SCRIPT_DIR/../python/$script_name" "$@"
 }
 
 # 检查 Python 依赖
 check_python_dependency() {
     package="$1"
-    python3 -c "import $package" 2>/dev/null
+    PYTHON_CMD=$(get_python_interpreter)
+    $PYTHON_CMD -c "import $package" 2>/dev/null
     return $?
 }
 
@@ -138,5 +154,19 @@ check_python() {
             \"message\": \"Python3 未安装。请安装 Python3: https://www.python.org/downloads/\"
         }"
         exit 1
+    fi
+}
+
+# 检查虚拟环境是否存在，如果不存在则提示
+check_venv() {
+    CLIPMATE_ROOT=$(get_clipmate_root)
+    VENV_PYTHON="$CLIPMATE_ROOT/venv/bin/python3"
+    
+    if [ ! -f "$VENV_PYTHON" ]; then
+        echo "⚠️  警告: 未找到 Python 虚拟环境" >&2
+        echo "提示: 请运行 ./setup-python-env.sh 设置虚拟环境" >&2
+        echo "或者手动创建: python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt" >&2
+        echo "" >&2
+        # 不退出，允许使用系统 Python（但可能缺少依赖）
     fi
 }

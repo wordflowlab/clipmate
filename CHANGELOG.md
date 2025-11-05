@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-01-06
+
+### Added
+
+#### Python 虚拟环境支持
+- 🐍 添加 `requirements.txt` - Python 依赖管理文件
+- 🔧 添加 `setup-python-env.sh` - 自动化 Python 环境设置脚本
+- 📚 更新 README.md - 添加虚拟环境设置说明
+
+#### 脚本增强
+- ✨ `common.sh` 新增 `get_python_interpreter()` 函数 - 自动检测并使用虚拟环境
+- ✨ `common.sh` 新增 `check_venv()` 函数 - 虚拟环境状态检查
+- 🔄 更新 `run_python_script()` - 优先使用虚拟环境中的 Python
+- 🔄 更新 `check_python_dependency()` - 在虚拟环境中检查依赖
+
+### Changed
+
+#### 依赖管理
+- 🔧 Python 依赖现在通过 requirements.txt 统一管理:
+  - opencv-python >= 4.8.0
+  - numpy >= 1.24.0
+  - pydub >= 0.25.1
+
+#### 兼容性改进
+- ✅ 解决 macOS 系统限制 - 使用虚拟环境避免全局安装问题
+- ✅ 脚本自动检测虚拟环境 - 无需手动激活
+- ✅ 向后兼容系统 Python - 虚拟环境不存在时回退
+
+### Fixed
+- 🐛 修复 macOS 系统无法全局安装 Python 包的问题
+- 🐛 优化 Python 脚本调用逻辑
+
 ## [0.1.0] - 2024-11-06
 
 ### Added

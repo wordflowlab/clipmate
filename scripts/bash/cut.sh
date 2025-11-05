@@ -7,6 +7,7 @@ source "$SCRIPT_DIR/common.sh"
 # 检查必要工具
 check_ffmpeg
 check_python
+check_venv
 
 # 获取项目信息
 PROJECT_DIR=$(get_current_project)

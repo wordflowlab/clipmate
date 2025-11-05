@@ -73,8 +73,41 @@ npm install -g ai-clipmate
 
 ### 3. 安装 Python 依赖
 
+由于 macOS 系统限制，需要使用虚拟环境安装 Python 依赖。
+
+**方法一：使用自动设置脚本（推荐）**
+
 ```bash
-pip3 install opencv-python numpy pydub
+# 在项目根目录运行
+./setup-python-env.sh
+```
+
+这个脚本会自动：
+- 创建 Python 虚拟环境
+- 安装所有必需的依赖（opencv-python, numpy, pydub）
+- 提供使用说明
+
+**方法二：手动设置**
+
+```bash
+# 创建虚拟环境
+python3 -m venv venv
+
+# 激活虚拟环境
+source venv/bin/activate
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 使用完毕后可以退出虚拟环境
+deactivate
+```
+
+**注意**: ClipMate 的 bash 脚本会自动检测并使用虚拟环境中的 Python，无需手动激活。但如果你直接运行 Python 脚本，需要先激活虚拟环境：
+
+```bash
+source venv/bin/activate
+python3 scripts/python/detect_silence.py video.mp4
 ```
 
 ## 🚀 快速开始

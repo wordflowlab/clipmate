@@ -1,6 +1,6 @@
 {
   "name": "ai-clipmate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "AI-powered video editing tool - Smart detection, auto-trimming, subtitle generation. Slash Command for Claude/Cursor/Gemini.",
   "keywords": [
@@ -27,7 +27,9 @@
     "templates/",
     "README.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "requirements.txt",
+    "setup-python-env.sh"
   ],
   "main": "dist/cli.js",
   "bin": {
