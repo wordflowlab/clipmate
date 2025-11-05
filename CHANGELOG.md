@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2025-01-06
+
+### Added
+
+#### CLI 命令
+- ✨ 新增 `clipmate setup-python` 命令 - 一键设置 Python 虚拟环境
+  - 自动检查 Python 3 版本
+  - 自动创建 requirements.txt
+  - 自动创建虚拟环境（venv/）
+  - 自动安装所有依赖
+
+### Changed
+
+#### 简化安装流程
+- 🔧 不再需要从 NPM 包中复制文件
+- 🔧 requirements.txt 内容直接硬编码在 CLI 中
+- 🔧 移除对 setup-python-env.sh 的依赖
+
+#### 文档更新
+- 📚 更新 README.md - 简化 Python 环境设置说明
+- 📚 更新 QUICKSTART.md - 使用 `clipmate setup-python` 命令
+
+### Fixed
+- 🐛 修复 NPM 全局安装后用户无法找到 setup 脚本的问题
+
 ## [0.1.1] - 2025-01-06
 
 ### Added

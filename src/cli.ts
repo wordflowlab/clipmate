@@ -543,4 +543,85 @@ program
     }
   });
 
+// setup-python - 设置 Python 虚拟环境
+program
+  .command('setup-python')
+  .description('设置 Python 虚拟环境和依赖')
+  .action(async () => {
+    const { execSync } = await import('child_process');
+
+    try {
+      displayInfo('正在设置 Python 虚拟环境...\n');
+
+      // 检查 Python 版本
+      displayInfo('检查 Python 版本...');
+      try {
+        const pythonVersion = execSync('python3 --version', { encoding: 'utf-8' });
+        console.log(chalk.green(`✓ ${pythonVersion.trim()}`));
+      } catch {
+        displayError('未找到 python3，请先安装 Python 3.8+');
+        process.exit(1);
+      }
+
+      const cwd = process.cwd();
+      const venvPath = path.join(cwd, 'venv');
+      const reqPath = path.join(cwd, 'requirements.txt');
+
+      // 创建 requirements.txt（如果不存在）
+      if (!await fs.pathExists(reqPath)) {
+        displayInfo('创建 requirements.txt...');
+        const requirementsContent = `opencv-python>=4.8.0
+numpy>=1.24.0
+pydub>=0.25.1
+`;
+        await fs.writeFile(reqPath, requirementsContent);
+        console.log(chalk.green('✓ requirements.txt 创建成功'));
+      } else {
+        console.log(chalk.dim('requirements.txt 已存在'));
+      }
+
+      // 创建虚拟环境
+      if (!await fs.pathExists(venvPath)) {
+        displayInfo('创建虚拟环境...');
+        execSync('python3 -m venv venv', {
+          stdio: 'inherit',
+          cwd
+        });
+        console.log(chalk.green('✓ 虚拟环境创建成功'));
+      } else {
+        console.log(chalk.dim('虚拟环境已存在'));
+      }
+
+      // 升级 pip
+      displayInfo('升级 pip...');
+      execSync('venv/bin/pip install --upgrade pip', {
+        stdio: 'pipe',
+        cwd
+      });
+      console.log(chalk.green('✓ pip 升级完成'));
+
+      // 安装依赖
+      displayInfo('安装 Python 依赖 (opencv-python, numpy, pydub)...');
+      execSync('venv/bin/pip install -r requirements.txt', {
+        stdio: 'inherit',
+        cwd
+      });
+
+      displaySuccess('\n✅ Python 环境设置完成！');
+      console.log('');
+      console.log(chalk.cyan('📝 使用说明:'));
+      console.log('   1. ClipMate 脚本会自动使用虚拟环境，无需手动激活');
+      console.log('   2. 如需手动使用: source venv/bin/activate');
+      console.log('   3. 退出虚拟环境: deactivate');
+      console.log('');
+
+    } catch (error) {
+      displayError('Python 环境设置失败');
+      if (error instanceof Error) {
+        console.error(chalk.red(error.message));
+      }
+      process.exit(1);
+    }
+  });
+
 program.parse();

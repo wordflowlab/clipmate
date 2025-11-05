@@ -21,11 +21,15 @@ npm link
 ### 2. 安装必要工具
 
 ```bash
-# macOS
-brew install ffmpeg python3
+# 全局安装 ClipMate
+npm install -g ai-clipmate
 
-# 安装 Python 依赖
-pip3 install opencv-python numpy
+# macOS 安装 FFmpeg
+brew install ffmpeg
+
+# 设置 Python 环境（在项目目录中）
+cd your-project
+clipmate setup-python
 ```
 
 ### 3. 创建视频项目
