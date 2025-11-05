@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2025-01-06
+
+### Fixed
+
+#### Bug 修复
+- 🐛 修复 `detect_silence.py` 中的 subprocess 参数错误
+  - 问题：`capture_output=True` 和 `stderr=subprocess.STDOUT` 不能同时使用
+  - 修复：使用 `result.stderr` 获取 FFmpeg 输出（FFmpeg 将日志输出到 stderr）
+  - 影响：静音检测功能现在可以正常工作
+
 ## [0.1.2] - 2025-01-06
 
 ### Added

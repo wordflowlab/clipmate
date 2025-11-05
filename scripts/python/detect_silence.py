@@ -76,8 +76,8 @@ def detect_silence_segments(video_path, threshold_db=-40, min_duration=2.0):
             '-f', 'null', '-'
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True, stderr=subprocess.STDOUT)
-        output = result.stdout
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        output = result.stderr
 
         # 解析 ffmpeg 输出
         silence_segments = []
