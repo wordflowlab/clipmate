@@ -1,0 +1,107 @@
+presets:
+  teaching:
+    label: "🎓 教学演示模式"
+    description: "适合在线课程、软件演示、编程教学"
+    silence_threshold: 2.0      # 静音阈值(秒)
+    silence_db: -40             # 音量阈值(dB)
+    silence_action: "delete"    # 操作: delete|speed
+    repeat_detection: true      # 检测重复画面
+    repeat_similarity: 0.95     # 重复相似度阈值 (0-1)
+    repeat_min_duration: 3.0    # 重复最小持续时间(秒)
+    repeat_action: "speed_2x"   # 操作: speed_1.5x|speed_2x|speed_3x|delete
+    scene_detection: true       # 场景切换检测
+    target_audience: "学习者"
+    expected_compression: "15-25%"
+
+  meeting:
+    label: "📊 会议录制模式"
+    description: "适合会议、访谈、研讨会记录"
+    silence_threshold: 3.0      # 更宽松,保留思考停顿
+    silence_db: -35
+    silence_action: "delete"
+    repeat_detection: false     # 会议通常无重复画面
+    keep_intro_outro: true      # 保留开场和结尾
+    scene_detection: false
+    speaker_diarization: true   # 说话人分离(配合字幕使用)
+    target_audience: "参会者"
+    expected_compression: "10-15%"
+
+  vlog:
+    label: "📹 Vlog 生活模式"
+    description: "适合旅行Vlog、生活记录、美食探店"
+    silence_threshold: 1.0      # 更严格,快节奏
+    silence_db: -45
+    silence_action: "speed_1.5x" # 轻度加速,保持自然
+    repeat_detection: false
+    scene_detection: true       # 重要:用于自动转场
+    scene_threshold: 30.0       # 场景切换敏感度
+    add_transitions: true       # 自动添加转场标记
+    target_audience: "粉丝/观众"
+    expected_compression: "8-12%"
+
+  short:
+    label: "⚡ 短视频模式"
+    description: "适合抖音、快手、小红书短视频"
+    silence_threshold: 1.0
+    silence_db: -40
+    silence_action: "delete"    # 严格删除,无冗余
+    repeat_detection: true
+    repeat_action: "delete"     # 重复直接删除
+    scene_detection: true
+    fast_paced: true            # 快节奏优化
+    beat_detection: true        # 音乐卡点识别
+    max_duration: 60            # 最大时长限制(秒)
+    target_audience: "短视频用户"
+    expected_compression: "20-30%"
+
+# 自定义配置示例
+custom_examples:
+  gaming:
+    label: "🎮 游戏解说模式"
+    description: "游戏录制、电竞解说"
+    silence_threshold: 1.5
+    silence_db: -38
+    repeat_detection: true
+    repeat_action: "speed_3x"   # 死亡等待加速3x
+    death_screen_detection: true # 特殊:识别死亡画面
+    expected_compression: "25-35%"
+
+  product_review:
+    label: "📦 产品评测模式"
+    description: "产品开箱、评测视频"
+    silence_threshold: 1.2
+    silence_db: -42
+    repeat_detection: false
+    scene_detection: true
+    highlight_detection: true   # 识别精彩片段
+    expected_compression: "10-18%"
+
+# 检测参数说明
+parameter_guide:
+  silence_threshold:
+    unit: "秒"
+    description: "连续静音时长超过此值才会被标记"
+    range: "0.5 - 5.0"
+    default: 2.0
+    tips: "教学视频可设为 2.0,短视频设为 1.0"
+
+  silence_db:
+    unit: "dB"
+    description: "音量低于此值被认为是静音"
+    range: "-60 to -30"
+    default: -40
+    tips: "环境噪音大可设为 -35,安静环境 -45"
+
+  repeat_similarity:
+    unit: "相似度"
+    description: "画面相似度超过此值被认为是重复"
+    range: "0.85 - 0.98"
+    default: 0.95
+    tips: "0.95 适合大多数场景, 0.90 检测更宽松"
+
+  scene_threshold:
+    unit: "差异度"
+    description: "画面差异超过此值被认为是场景切换"
+    range: "20 - 50"
+    default: 30
+    tips: "30 为平衡值,越小越敏感"

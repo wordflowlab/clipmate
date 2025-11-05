@@ -1,0 +1,63 @@
+# 源代码(已编译到 dist/)
+src/
+tsconfig.json
+*.ts
+!*.d.ts
+
+# 测试和开发
+test/
+tests/
+*.test.js
+*.spec.js
+coverage/
+.nyc_output/
+
+# 示例和文档(保留 README)
+examples/
+docs/
+*.md
+!README.md
+!CHANGELOG.md
+!LICENSE
+
+# 用户项目示例
+projects/
+
+# 开发工具
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.travis.yml
+.circleci/
+azure-pipelines.yml
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp
+.cache/
+
+# Claude 配置(示例,不应包含)
+.claude/settings.local.json

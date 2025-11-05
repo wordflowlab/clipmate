@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+# 通用函数库 - ClipMate
+
+# 获取 ClipMate 项目根目录
+get_clipmate_root() {
+    # 查找包含 .clipmate/config.json 的项目根目录
+    if [ -f ".clipmate/config.json" ]; then
+        pwd
+    else
+        # 向上查找包含 .clipmate 的目录
+        current=$(pwd)
+        while [ "$current" != "/" ]; do
+            if [ -f "$current/.clipmate/config.json" ]; then
+                echo "$current"
+                return 0
+            fi
+            current=$(dirname "$current")
+        done
+        echo "错误: 未找到 clipmate 项目根目录" >&2
+        echo "提示: 请在 clipmate 项目目录内运行，或先运行 'clipmate init <项目名>' 创建项目" >&2
+        exit 1
+    fi
+}
+
+# 获取当前视频项目目录（就是工作区根目录）
+get_current_project() {
+    get_clipmate_root
+}
+
+# 获取项目名称（从配置文件读取）
+get_project_name() {
+    CLIPMATE_ROOT=$(get_clipmate_root)
+    if [ -f "$CLIPMATE_ROOT/.clipmate/config.json" ]; then
+        # 从 config.json 读取项目名称
+        grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' "$CLIPMATE_ROOT/.clipmate/config.json" | \
+        sed 's/"name"[[:space:]]*:[[:space:]]*"\([^"]*\)"/\1/'
+    else
+        basename "$CLIPMATE_ROOT"
+    fi
+}
+
+# 输出 JSON（用于与 AI 助手通信）
+output_json() {
+    echo "$1"
+}
+
+# 确保文件存在
+ensure_file() {
+    file="$1"
+    template="$2"
+
+    if [ ! -f "$file" ]; then
+        if [ -f "$template" ]; then
+            cp "$template" "$file"
+        else
+            touch "$file"
+        fi
+    fi
+}
+
+# 确保目录存在
+ensure_dir() {
+    dir="$1"
+    mkdir -p "$dir"
+}
+
+# 调用 Python 脚本
+run_python_script() {
+    script_name="$1"
+    shift
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    python3 "$SCRIPT_DIR/../python/$script_name" "$@"
+}
+
+# 检查 Python 依赖
+check_python_dependency() {
+    package="$1"
+    python3 -c "import $package" 2>/dev/null
+    return $?
+}
+
+# 查找视频文件
+find_video_file() {
+    PROJECT_DIR=$(get_clipmate_root)
+    VIDEO_DIR="$PROJECT_DIR/videos"
+
+    # 查找第一个视频文件
+    find "$VIDEO_DIR" -type f \( -name "*.mp4" -o -name "*.mov" -o -name "*.avi" -o -name "*.mkv" \) 2>/dev/null | head -n 1
+}
+
+# 获取视频信息（使用 ffprobe）
+get_video_info() {
+    video_file="$1"
+
+    if ! command -v ffprobe &> /dev/null; then
+        echo "{\"error\": \"ffprobe 未安装\"}"
+        return 1
+    fi
+
+    # 获取时长
+    duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$video_file")
+
+    # 获取分辨率
+    width=$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 "$video_file")
+    height=$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=noprint_wrappers=1:nokey=1 "$video_file")
+
+    # 获取帧率
+    fps=$(ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=noprint_wrappers=1:nokey=1 "$video_file" | bc -l)
+
+    # 获取码率
+    bitrate=$(ffprobe -v error -show_entries format=bit_rate -of default=noprint_wrappers=1:nokey=1 "$video_file")
+
+    echo "{\"duration\": $duration, \"width\": $width, \"height\": $height, \"fps\": $fps, \"bitrate\": $bitrate}"
+}
+
+# 格式化时长（秒转为 HH:MM:SS）
+format_duration() {
+    seconds="$1"
+    printf "%02d:%02d:%02d" $((seconds/3600)) $((seconds%3600/60)) $((seconds%60))
+}
+
+# 检查 FFmpeg 是否安装
+check_ffmpeg() {
+    if ! command -v ffmpeg &> /dev/null; then
+        output_json "{
+            \"status\": \"error\",
+            \"message\": \"FFmpeg 未安装。请安装 FFmpeg: brew install ffmpeg (macOS) 或 apt-get install ffmpeg (Linux)\"
+        }"
+        exit 1
+    fi
+}
+
+# 检查 Python3 是否安装
+check_python() {
+    if ! command -v python3 &> /dev/null; then
+        output_json "{
+            \"status\": \"error\",
+            \"message\": \"Python3 未安装。请安装 Python3: https://www.python.org/downloads/\"
+        }"
+        exit 1
+    fi
+}
