@@ -100,8 +100,29 @@ find_video_file() {
     PROJECT_DIR=$(get_clipmate_root)
     VIDEO_DIR="$PROJECT_DIR/videos"
 
+    # 检查 videos 目录是否存在
+    if [ ! -d "$VIDEO_DIR" ]; then
+        echo "❌ 错误: videos/ 目录不存在" >&2
+        echo "提示: 请先创建 videos 目录并放入视频文件" >&2
+        echo "   mkdir -p $VIDEO_DIR" >&2
+        echo "   cp your-video.mp4 $VIDEO_DIR/" >&2
+        return 1
+    fi
+
     # 查找第一个视频文件
-    find "$VIDEO_DIR" -type f \( -name "*.mp4" -o -name "*.mov" -o -name "*.avi" -o -name "*.mkv" \) 2>/dev/null | head -n 1
+    local video_file=$(find "$VIDEO_DIR" -type f \( -name "*.mp4" -o -name "*.mov" -o -name "*.avi" -o -name "*.mkv" \) 2>/dev/null | head -n 1)
+
+    if [ -z "$video_file" ]; then
+        echo "❌ 错误: videos/ 目录中未找到视频文件" >&2
+        echo "当前目录: $VIDEO_DIR" >&2
+        echo "支持格式: .mp4, .mov, .avi, .mkv" >&2
+        echo "" >&2
+        echo "目录内容:" >&2
+        ls -lh "$VIDEO_DIR" 2>/dev/null | head -10 >&2
+        return 1
+    fi
+
+    echo "$video_file"
 }
 
 # 获取视频信息（使用 ffprobe）
@@ -161,12 +182,21 @@ check_python() {
 check_venv() {
     CLIPMATE_ROOT=$(get_clipmate_root)
     VENV_PYTHON="$CLIPMATE_ROOT/venv/bin/python3"
-    
+
     if [ ! -f "$VENV_PYTHON" ]; then
-        echo "⚠️  警告: 未找到 Python 虚拟环境" >&2
-        echo "提示: 请运行 ./setup-python-env.sh 设置虚拟环境" >&2
-        echo "或者手动创建: python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt" >&2
         echo "" >&2
-        # 不退出，允许使用系统 Python（但可能缺少依赖）
+        echo "⚠️  警告: 未找到 Python 虚拟环境" >&2
+        echo "" >&2
+        echo "📝 Python 依赖可能缺失，建议运行以下命令设置环境:" >&2
+        echo "   clipmate setup-python" >&2
+        echo "" >&2
+        echo "或手动设置:" >&2
+        echo "   cd $CLIPMATE_ROOT" >&2
+        echo "   python3 -m venv venv" >&2
+        echo "   source venv/bin/activate" >&2
+        echo "   pip install opencv-python numpy pydub" >&2
+        echo "" >&2
+        echo "⚠️  当前将使用系统 Python，可能因依赖缺失而失败" >&2
+        echo "" >&2
     fi
 }

@@ -11,15 +11,35 @@ from pathlib import Path
 
 def check_dependencies():
     """检查 Python 依赖"""
+    missing_packages = []
+
     try:
         import cv2
+    except ImportError:
+        missing_packages.append('opencv-python')
+
+    try:
         import numpy as np
-    except ImportError as e:
-        print(json.dumps({
-            "status": "error",
-            "message": f"缺少 Python 依赖: {str(e)}",
-            "hint": "请安装依赖: pip3 install opencv-python numpy pydub"
-        }))
+    except ImportError:
+        missing_packages.append('numpy')
+
+    try:
+        import pydub
+    except ImportError:
+        missing_packages.append('pydub')
+
+    if missing_packages:
+        print("", file=sys.stderr)
+        print("❌ 错误: 缺少必要的 Python 包", file=sys.stderr)
+        print("", file=sys.stderr)
+        print(f"缺失的包: {', '.join(missing_packages)}", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("🔧 快速修复:", file=sys.stderr)
+        print("   clipmate setup-python", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("或手动安装:", file=sys.stderr)
+        print(f"   pip install {' '.join(missing_packages)}", file=sys.stderr)
+        print("", file=sys.stderr)
         sys.exit(1)
 
 def get_video_info(video_path):
@@ -321,7 +341,10 @@ def main():
             min_duration=preset_config['repeat_min_duration']
         )
     else:
-        print("视频较长,跳过重复画面检测", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("⏭️  视频时长超过 10 分钟，跳过重复画面检测以节省时间", file=sys.stderr)
+        print("提示: 如需完整检测，请先剪辑视频或使用更短的片段", file=sys.stderr)
+        print("", file=sys.stderr)
 
     # 检测场景切换(简化版)
     scene_changes = []
@@ -329,7 +352,7 @@ def main():
         print("正在检测场景切换...", file=sys.stderr)
         scene_changes = detect_scene_changes(args.video)
     else:
-        print("视频较长,跳过场景检测", file=sys.stderr)
+        print("⏭️  视频时长超过 10 分钟，跳过场景切换检测", file=sys.stderr)
 
     # 计算统计信息
     total_silence_duration = sum(s['duration'] for s in silence_segments)

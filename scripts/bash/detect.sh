@@ -76,17 +76,46 @@ echo "视频文件: $VIDEO_FILE" >&2
 echo "检测预设: $PRESET" >&2
 echo "" >&2
 
-DETECT_RESULT=$(run_python_script "detect_silence.py" "$VIDEO_FILE" --preset "$PRESET")
+# 分别捕获 stdout（JSON）和 stderr（日志）
+TEMP_STDOUT=$(mktemp)
+TEMP_STDERR=$(mktemp)
+trap "rm -f $TEMP_STDOUT $TEMP_STDERR" EXIT
+
+run_python_script "detect_silence.py" "$VIDEO_FILE" --preset "$PRESET" > "$TEMP_STDOUT" 2> "$TEMP_STDERR"
+EXIT_CODE=$?
+
+# 显示 Python 的日志输出
+if [ -s "$TEMP_STDERR" ]; then
+    cat "$TEMP_STDERR" >&2
+fi
 
 # 检查 Python 脚本执行结果
-if [ $? -ne 0 ]; then
+if [ $EXIT_CODE -ne 0 ]; then
+    ERROR_OUTPUT=$(cat "$TEMP_STDOUT" "$TEMP_STDERR" 2>/dev/null)
+    echo "" >&2
+    echo "❌ Python 脚本执行失败" >&2
+    echo "退出代码: $EXIT_CODE" >&2
+    echo "" >&2
+
+    # 检查常见错误
+    if echo "$ERROR_OUTPUT" | grep -q "ModuleNotFoundError\|No module named"; then
+        echo "💡 看起来是 Python 依赖缺失" >&2
+        echo "   请运行: clipmate setup-python" >&2
+    elif echo "$ERROR_OUTPUT" | grep -q "FFmpeg"; then
+        echo "💡 看起来是 FFmpeg 相关问题" >&2
+        echo "   请确保已安装 FFmpeg: brew install ffmpeg" >&2
+    fi
+
     output_json "{
         \"status\": \"error\",
         \"message\": \"检测脚本执行失败\",
-        \"details\": \"$DETECT_RESULT\"
+        \"exit_code\": $EXIT_CODE,
+        \"error_output\": $(echo "$ERROR_OUTPUT" | jq -Rs .)
     }"
     exit 1
 fi
+
+DETECT_RESULT=$(cat "$TEMP_STDOUT")
 
 # 保存检测报告
 echo "$DETECT_RESULT" > "$REPORT_FILE"

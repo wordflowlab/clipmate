@@ -5,6 +5,69 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2025-01-06
+
+### Fixed
+
+#### 🐛 重大 Bug 修复
+
+**检测功能修复**:
+- 修复 `detect.sh` 输出流混乱问题 - 使用临时文件分离 stdout（JSON）和 stderr（日志）
+- 修复 `detect_silence.py` 依赖检查 - 现在检查所有包（opencv-python, numpy, pydub）
+- 修复 Python 依赖缺失时的错误提示 - 明确告知缺少哪些包
+
+**剪辑功能修复**:
+- 修复 `cut.sh` 输出流混乱问题 - 采用与 detect.sh 相同的临时文件分离模式
+- 修复 `cut_video.py` FFmpeg 调用 - 移除 `stderr=subprocess.STDOUT`，使用 `result.stderr`
+- 添加 JSON 格式验证 - 防止无效输出导致解析失败
+
+**错误处理改进**:
+- `common.sh`: 改进虚拟环境检测提示，详细说明如何设置
+- `common.sh`: 改进 `find_video_file()` - 检查目录存在性，列出文件内容
+- `detect.sh`: 添加常见错误诊断（依赖缺失、FFmpeg问题）
+- `cut.sh`: 添加常见错误诊断（依赖缺失、检测报告不存在、FFmpeg问题）
+
+### Changed
+
+#### 📝 用户体验改进
+
+**长视频处理**:
+- 改进长视频（>10分钟）提示信息
+- 明确说明跳过了哪些检测（重复画面、场景切换）
+- 提供解决方案建议
+
+**错误信息改进**:
+- 所有错误现在包含明确的修复建议
+- Python 依赖缺失时显示 `clipmate setup-python` 命令
+- FFmpeg 错误时提供安装命令
+- 检测报告缺失时提示先运行 `/detect`
+
+**输出规范化**:
+- Python 脚本进度信息 → stderr
+- Python 脚本 JSON 结果 → stdout
+- Bash 脚本正确分离两种输出
+- 用户可以看到实时进度，不影响 JSON 解析
+
+### Technical Details
+
+**修改的文件**:
+- `scripts/bash/common.sh` - 虚拟环境检测、视频文件查找
+- `scripts/bash/detect.sh` - 输出流分离、错误诊断
+- `scripts/bash/cut.sh` - 输出流分离、错误诊断、JSON验证
+- `scripts/python/detect_silence.py` - 依赖检查、长视频提示
+- `scripts/python/cut_video.py` - FFmpeg调用修复、错误处理
+
+**问题根源**:
+- subprocess 的 `capture_output=True` 和 `stderr=subprocess.STDOUT` 冲突
+- Bash 命令替换 `$(...)` 混合 stdout 和 stderr
+- 缺少错误类型诊断和用户友好的提示
+
+**解决方案**:
+- 使用临时文件分别捕获 stdout 和 stderr
+- stderr 输出到终端供用户查看进度
+- stdout 仅包含 JSON，用于程序间通信
+- 添加错误模式匹配和智能诊断
+
 ## [0.1.3] - 2025-01-06
 
 ### Fixed

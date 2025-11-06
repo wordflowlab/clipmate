@@ -140,11 +140,11 @@ def cut_video_simple(input_path, output_path, report, mode='auto'):
                     str(segment_file)
                 ]
 
-                result = subprocess.run(cmd, capture_output=True, stderr=subprocess.STDOUT)
+                result = subprocess.run(cmd, capture_output=True, text=True)
                 if result.returncode == 0:
                     segment_files.append(segment_file)
                 else:
-                    print(f"警告: 片段 {i} 提取失败", file=sys.stderr)
+                    print(f"警告: 片段 {i} 提取失败: {result.stderr}", file=sys.stderr)
 
             # 合并片段
             if segment_files:
@@ -164,7 +164,7 @@ def cut_video_simple(input_path, output_path, report, mode='auto'):
                     output_path
                 ]
 
-                result = subprocess.run(cmd, capture_output=True, stderr=subprocess.STDOUT)
+                result = subprocess.run(cmd, capture_output=True, text=True)
 
                 # 清理临时文件
                 for seg_file in segment_files:
@@ -172,7 +172,10 @@ def cut_video_simple(input_path, output_path, report, mode='auto'):
                         seg_file.unlink()
                     except:
                         pass
-                concat_file.unlink()
+                try:
+                    concat_file.unlink()
+                except:
+                    pass
 
                 if result.returncode == 0:
                     return {
@@ -192,7 +195,7 @@ def cut_video_simple(input_path, output_path, report, mode='auto'):
                     return {
                         "status": "error",
                         "message": "FFmpeg 合并失败",
-                        "details": result.stdout.decode('utf-8', errors='ignore')
+                        "details": result.stderr
                     }
 
         except Exception as e:
